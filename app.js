@@ -236,7 +236,38 @@
     }
 
     updateOverallProgressDisplays();
+    adjustNavPadding();
     window.scrollTo({ top: 0, behavior: 'instant' });
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
+  }
+
+  // --- DYNAMIC NAV PADDING (MOBILE CLEARANCE) ---
+  function adjustNavPadding() {
+    const topbar = $('.app-topbar');
+    const bottomNav = $('.bottom-nav');
+    const main = $('.main-app-content');
+    if (!main) return;
+
+    if (topbar) {
+      const topH = Math.max(topbar.offsetHeight, 58);
+      const targetTop = topH + 26; // generous 26px clear spacing between topbar and first card
+      main.style.setProperty('padding-top', `calc(${targetTop}px + env(safe-area-inset-top))`, 'important');
+      const compTop = parseInt(window.getComputedStyle(main).paddingTop, 10);
+      if (isNaN(compTop) || compTop < targetTop) {
+        main.style.setProperty('padding-top', `${targetTop}px`, 'important');
+      }
+    }
+
+    if (bottomNav) {
+      const botH = Math.max(bottomNav.offsetHeight, 65);
+      const targetBottom = botH + 55; // generous 55px clearance above bottom navigation bar
+      main.style.setProperty('padding-bottom', `calc(${targetBottom}px + env(safe-area-inset-bottom))`, 'important');
+      const compBot = parseInt(window.getComputedStyle(main).paddingBottom, 10);
+      if (isNaN(compBot) || compBot < targetBottom) {
+        main.style.setProperty('padding-bottom', `${targetBottom}px`, 'important');
+      }
+    }
   }
 
   function initBottomNav() {
@@ -379,7 +410,7 @@
 
     focusCard.innerHTML = `
       <div class="today-card-top d-flex justify-content-between align-items-start gap-2 flex-wrap mb-3">
-        <div class="today-focus-title-wrap">
+        <div class="today-focus-title-wrap min-w-0 flex-grow-1">
           <div class="badge bg-secondary-subtle text-secondary-emphasis mb-1">
             Semana ${currentWeek.topicNum} · ${esc(activeDay.name)} ${isRealToday ? '(Hoje)' : ''}
           </div>
@@ -387,7 +418,7 @@
           <div class="text-muted small">Sessão estruturada de ${activeDay.minutes} minutos</div>
         </div>
 
-        <button type="button" class="btn ${isCompleted ? 'btn-success' : 'btn-outline-success'} fw-bold px-3 py-2" id="todayToggleDoneBtn">
+        <button type="button" class="btn ${isCompleted ? 'btn-success' : 'btn-outline-success'} fw-bold px-3 py-2 flex-shrink-0" id="todayToggleDoneBtn">
           ${isCompleted ? '✓ Dia Concluído' : 'Marcar Dia Concluído'}
         </button>
       </div>
@@ -395,13 +426,13 @@
       <!-- Step-by-Step 30-min Breakdown -->
       <div class="today-steps-container d-flex flex-column gap-2 mb-3">
         ${activeDay.steps.map(s => `
-          <div class="card bg-body-tertiary border-0 p-3">
-            <div class="d-flex align-items-start gap-3">
-              <span class="badge bg-primary fs-6 p-2 rounded-3">${s.minutes}m</span>
-              <div class="flex-grow-1">
+          <div class="card bg-body-tertiary border-0 p-3 today-step-item">
+            <div class="d-flex align-items-start gap-3 min-w-0">
+              <span class="badge bg-primary fs-6 p-2 rounded-3 flex-shrink-0">${s.minutes}m</span>
+              <div class="flex-grow-1 min-w-0">
                 <h4 class="h6 fw-bold mb-1">${esc(s.label)}</h4>
                 <p class="small text-muted mb-2">${esc(s.task)}</p>
-                <a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary py-1 px-2">
+                <a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary py-1 px-2 text-start step-link-btn">
                   ↗ ${esc(s.source)}
                 </a>
               </div>
@@ -607,14 +638,14 @@
       return `
         <details class="week-card card shadow-sm" data-week="${w.number}" data-phase="${w.phase}">
           <summary class="week-summary card-header bg-body d-flex align-items-center justify-content-between p-3">
-            <div class="d-flex align-items-center gap-3 min-w-0">
-              <div class="week-card-avatar shadow-sm">${w.topicNum}</div>
-              <div class="week-title-box min-w-0">
+            <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+              <div class="week-card-avatar shadow-sm flex-shrink-0">${w.topicNum}</div>
+              <div class="week-title-box min-w-0 flex-grow-1">
                 <h3 class="week-title h6 fw-bold mb-1">${esc(w.title)}</h3>
                 <p class="week-sub text-muted small mb-0">Semana ${w.topicNum} de 52 · ${esc(w.area)} · Gramática: ${esc(w.grammar)}</p>
               </div>
             </div>
-            <div class="week-tags d-flex align-items-center gap-2 flex-shrink-0">
+            <div class="week-tags d-flex align-items-center gap-2 flex-shrink-0 ms-2">
               <span class="badge ${d === 7 ? 'bg-success' : 'bg-secondary-subtle text-secondary-emphasis'}">${d === 7 ? '✓ Completa' : `${d}/7 dias`}</span>
               <span class="chevron" aria-hidden="true">⌄</span>
             </div>
@@ -663,13 +694,13 @@
       <article class="week-slide-card card shadow-sm ${phaseClass}" data-week="${w.number}" data-phase="${w.phase}">
         <!-- Card Header with Clean Avatar -->
         <header class="slide-card-header card-header bg-body d-flex align-items-center justify-content-between p-3 border-bottom">
-          <div class="d-flex align-items-center gap-3 min-w-0">
-            <div class="week-avatar shadow-sm" aria-label="Semana ${w.topicNum}">
+          <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+            <div class="week-avatar shadow-sm flex-shrink-0" aria-label="Semana ${w.topicNum}">
               ${w.topicNum}
             </div>
 
-            <div class="slide-header-text min-w-0">
-              <div class="slide-eyebrow text-muted small fw-bold text-uppercase">Semana ${w.topicNum} de 52 · ${esc(w.area)}</div>
+            <div class="slide-header-text min-w-0 flex-grow-1">
+              <div class="slide-eyebrow text-muted small fw-bold text-uppercase text-truncate">Semana ${w.topicNum} de 52 · ${esc(w.area)}</div>
               <h2 class="slide-title h5 fw-bold mb-1">${esc(w.title)}</h2>
               <div class="slide-meta text-muted small">
                 <span>Gramática: ${esc(w.grammar)}</span>
@@ -698,7 +729,7 @@
     const vCount = weekVocabCount(w);
 
     const tabsHtml = `
-      <nav class="week-inner-tabs d-flex flex-wrap gap-1 mb-3" role="tablist">
+      <nav class="week-inner-tabs" role="tablist">
         <button type="button" class="inner-tab-btn ${ui.tab === 'days' ? 'active' : ''}" data-tab="days">
           <span>📅 Dias (${done}/7)</span>
         </button>
@@ -767,13 +798,13 @@
 
           <div class="d-flex flex-column gap-2">
             ${currentDay.steps.map(s => `
-              <div class="card bg-body border-0 p-2">
-                <div class="d-flex align-items-start gap-2">
-                  <span class="badge bg-primary-subtle text-primary fw-bold p-1">${s.minutes}m</span>
-                  <div class="flex-grow-1">
+              <div class="card bg-body border-0 p-2 today-step-item">
+                <div class="d-flex align-items-start gap-2 min-w-0">
+                  <span class="badge bg-primary-subtle text-primary fw-bold p-1 flex-shrink-0">${s.minutes}m</span>
+                  <div class="flex-grow-1 min-w-0">
                     <h4 class="small fw-bold mb-1">${esc(s.label)}</h4>
                     <p class="small text-muted mb-1">${esc(s.task)}</p>
-                    <a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer" class="badge bg-light text-primary border text-decoration-none py-1 px-2">
+                    <a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary py-1 px-2 text-start step-link-btn">
                       ↗ ${esc(s.source)}
                     </a>
                   </div>
@@ -805,7 +836,7 @@
           <div class="badge bg-warning-subtle text-warning-emphasis align-self-start mb-2">📚 Gramática em Uso</div>
           <h4 class="h6 fw-bold mb-1">${esc(w.grammar)}</h4>
           <p class="small text-muted mb-2">${esc(w.grammarOutcome)}</p>
-          <a href="${esc(w.grammarUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary py-1 px-2 align-self-start">
+          <a href="${esc(w.grammarUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary py-1 px-2 align-self-start step-link-btn">
             ↗ Consultar no Cambridge Dictionary
           </a>
         </div>
@@ -814,7 +845,7 @@
           <div class="badge bg-danger-subtle text-danger-emphasis align-self-start mb-2">🎬 Conteúdo de Apoio</div>
           <h4 class="h6 fw-bold mb-1">${esc(w.contentTitle)}</h4>
           <p class="small text-muted mb-2">Assista ao vídeo para treinar compreensão e pronúncia em contexto.</p>
-          <a href="${esc(w.contentUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary py-1 px-2 align-self-start">
+          <a href="${esc(w.contentUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary py-1 px-2 align-self-start step-link-btn">
             ↗ Abrir busca no YouTube
           </a>
         </div>
@@ -826,18 +857,18 @@
     return `
       <div class="d-flex flex-column gap-2">
         ${w.resources.map(r => `
-          <a class="card bg-body-tertiary border-0 p-3 text-decoration-none text-body" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">
+          <a class="card bg-body-tertiary border-0 p-3 text-decoration-none text-body step-link-btn" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">
             <div class="d-flex justify-content-between align-items-center">
               <span class="fw-bold text-primary">${esc(r.label)}</span>
-              <span class="text-muted">↗</span>
+              <span class="text-muted ms-2">↗</span>
             </div>
             <div class="small text-muted mt-1">${esc(r.purpose)}</div>
           </a>
         `).join('')}
-        <a class="card bg-primary-subtle border-0 p-3 text-decoration-none text-body" href="${esc(w.contentUrl)}" target="_blank" rel="noopener noreferrer">
+        <a class="card bg-primary-subtle border-0 p-3 text-decoration-none text-body step-link-btn" href="${esc(w.contentUrl)}" target="_blank" rel="noopener noreferrer">
           <div class="d-flex justify-content-between align-items-center">
             <span class="fw-bold text-primary">YouTube · Vídeo Curado</span>
-            <span class="text-primary">↗</span>
+            <span class="text-primary ms-2">↗</span>
           </div>
           <div class="small text-muted mt-1">Busca temática no YouTube</div>
         </a>
@@ -853,7 +884,7 @@
           <span class="small fw-bold">${vCount} de 70 vocabulários revistos</span>
           <button type="button" class="btn btn-sm btn-outline-primary goToVocabTabBtn">Abrir na Aba Vocabulário →</button>
         </div>
-        <div class="vocab-page-grid" style="max-height: 320px;">
+        <div class="vocab-page-grid">
           ${w.vocab.slice(0, 20).map(v => {
             const known = !!state.vocab[v.id];
             return `
@@ -1176,6 +1207,10 @@
     initTrilhaToolbar();
     initSwipeGestures();
     initVocabPageControls();
+
+    adjustNavPadding();
+    window.addEventListener('resize', adjustNavPadding);
+    window.addEventListener('orientationchange', adjustNavPadding);
 
     switchPage(activePage);
   }
